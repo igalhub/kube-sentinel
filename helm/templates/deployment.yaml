@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kube-sentinel.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "kube-sentinel.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "kube-sentinel.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "kube-sentinel.fullname" . }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: kube-sentinel
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.port }}
+              protocol: TCP
+          env:
+            - name: KUBE_SENTINEL_PORT
+              value: "{{ .Values.port }}"
+            - name: KUBE_SENTINEL_NAMESPACES
+              value: "{{ .Values.namespacesToMonitor }}"
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: {{ .Values.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false

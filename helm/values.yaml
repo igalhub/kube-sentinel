@@ -1,0 +1,25 @@
+image:
+  repository: kube-sentinel
+  tag: latest
+  # Use Never when building locally with eval $(minikube docker-env)
+  pullPolicy: IfNotPresent
+
+port: 8080
+
+# Comma-separated list of namespaces to monitor. Empty string = all namespaces.
+namespacesToMonitor: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+service:
+  # NodePort required for minikube service access; use ClusterIP behind an ingress
+  type: NodePort
+
+serviceAccount:
+  name: kube-sentinel
