@@ -277,7 +277,7 @@
         },
         "overrides": [
           {
-            "matcher": {"id": "byNamePattern", "options": ".*unavailable"},
+            "matcher": {"id": "byRegexp", "options": ".*unavailable"},
             "properties": [
               {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}
             ]
