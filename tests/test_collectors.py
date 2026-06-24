@@ -394,10 +394,11 @@ def test_live_crashloop_metrics(k8s_clients, test_namespace):
             f"Expected restart_count >= 2, got {restart_val}"
         )
 
-        # After enough restarts K8s sets CrashLoopBackOff — wait for it
+        # Assertion 2: CrashLoopBackOff state — separate wait with longer timeout.
+        # K8s applies exponential backoff between restarts; CrashLoopBackOff label
+        # can take up to 5 min to appear. This is expected behavior, not a slow test.
         def _crashloop_state():
-            collector2 = PodCollector(v1)
-            m2, _ = collector2.collect()
+            m2, _ = PodCollector(v1).collect()
             return _sample(
                 m2,
                 "kube_sentinel_pod_container_state",
@@ -410,7 +411,21 @@ def test_live_crashloop_metrics(k8s_clients, test_namespace):
                 },
             ) == 1.0
 
-        wait_for(_crashloop_state, timeout=120, description="CrashLoopBackOff state")
+        wait_for(_crashloop_state, timeout=300, description="CrashLoopBackOff state")
+
+        final_metrics, final_errors = PodCollector(v1).collect()
+        assert final_errors == 0
+        assert _sample(
+            final_metrics,
+            "kube_sentinel_pod_container_state",
+            {
+                "namespace": test_namespace,
+                "pod": pod_name,
+                "container": "crash-container",
+                "state": "waiting",
+                "reason": "CrashLoopBackOff",
+            },
+        ) == 1.0, "CrashLoopBackOff state not present in final scrape"
 
     finally:
         v1.delete_namespaced_pod(pod_name, test_namespace)
