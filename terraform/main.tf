@@ -77,6 +77,13 @@ resource "helm_release" "prometheus" {
     templatefile("${path.module}/prometheus-values.yaml.tpl", {
       namespace       = var.namespace
       scrape_interval = var.scrape_interval
+    }),
+    # Alert rules loaded from alertmanager/rules.yaml — single source of truth.
+    # yamldecode parses the file; yamlencode re-encodes it into the serverFiles structure.
+    yamlencode({
+      serverFiles = {
+        "alerting_rules.yml" = yamldecode(file("${path.module}/../alertmanager/rules.yaml"))
+      }
     })
   ]
 }
