@@ -1,0 +1,11 @@
+.idea/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl

@@ -1,0 +1,51 @@
+# kube-sentinel configurable parameters
+# Copy to values.yaml and adjust as needed.
+# These values are consumed by the Helm chart (helm/values.yaml).
+
+# Kubernetes namespace where kube-sentinel and monitoring stack are deployed
+namespace: monitoring
+
+# Docker image configuration
+image:
+  repository: kube-sentinel
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Port the exporter's /metrics endpoint listens on
+port: 8080
+
+# How often the exporter polls the Kubernetes API (seconds)
+scrapeIntervalSeconds: 30
+
+# Namespaces to monitor. Empty list means all namespaces.
+# Example: ["default", "production"]
+namespacesToMonitor: []
+
+# Resource requests and limits for the exporter pod
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+# Prometheus scrape configuration (used when deploying via Terraform)
+prometheus:
+  scrapeInterval: 30s
+  evaluationInterval: 30s
+
+# Grafana configuration
+grafana:
+  adminPassword: ""  # Set via terraform.tfvars — never commit a real password
+  persistence:
+    enabled: false
+
+# Alertmanager thresholds
+alerting:
+  # Alert when pod restart count exceeds this value within the evaluation window
+  podRestartThreshold: 5
+  # Alert when a deployment has unavailable replicas for this many minutes
+  deploymentUnavailableMinutes: 2
+  # Alert when a node is not ready for this many minutes
+  nodeNotReadyMinutes: 1
