@@ -15,7 +15,7 @@ Test marker: @pytest.mark.k8s for tests requiring a live cluster.
 
 ## KS-001 — Repo scaffolding, .gitignore, LICENSE, directory skeleton
 
-**Status:** OPEN
+**Status:** DONE
 **Depends on:** nothing
 
 **Description:**
@@ -45,7 +45,7 @@ Establish the repository baseline. No application logic. No credentials.
 
 ## KS-002 — Exporter core: K8s API client + metric collectors
 
-**Status:** OPEN
+**Status:** DONE
 **Depends on:** KS-001
 
 **Description:**
@@ -100,7 +100,7 @@ and exposes results as Prometheus metrics on `/metrics`.
 
 ## KS-003 — Dockerfile + Helm chart
 
-**Status:** OPEN
+**Status:** DONE
 **Depends on:** KS-002
 
 **Description:**
@@ -137,7 +137,7 @@ deploys it onto the cluster with correct RBAC.
 
 ## KS-004 — Terraform: provision full monitoring stack
 
-**Status:** OPEN
+**Status:** DONE
 **Depends on:** KS-003
 
 **Description:**
@@ -178,7 +178,7 @@ Terraform providers.
 
 ## KS-005 — Grafana dashboard + Alertmanager rules
 
-**Status:** OPEN
+**Status:** DONE
 **Depends on:** KS-004
 
 **Description:**
@@ -214,7 +214,7 @@ is half a tool.
 
 ## KS-006 — CI pipeline (GitHub Actions)
 
-**Status:** OPEN
+**Status:** DONE
 **Depends on:** KS-002
 
 **Description:**
@@ -234,7 +234,7 @@ available on standard runners).
 
 ## KS-007 — README finalization + pre-publish audit
 
-**Status:** OPEN
+**Status:** DONE
 **Depends on:** KS-005, KS-006
 
 **Description:**
@@ -297,13 +297,13 @@ configuration. Deferred — out of scope for a minikube-first project.
 
 | Ticket | Title | Status |
 |---|---|---|
-| KS-001 | Repo scaffolding | OPEN |
-| KS-002 | Exporter core + collectors | OPEN |
-| KS-003 | Dockerfile + Helm chart | OPEN |
-| KS-004 | Terraform: full monitoring stack | OPEN |
-| KS-005 | Grafana dashboard + Alertmanager rules | OPEN |
-| KS-006 | CI pipeline | OPEN |
-| KS-007 | README finalization + audit | OPEN |
+| KS-001 | Repo scaffolding | DONE |
+| KS-002 | Exporter core + collectors | DONE |
+| KS-003 | Dockerfile + Helm chart | DONE |
+| KS-004 | Terraform: full monitoring stack | DONE |
+| KS-005 | Grafana dashboard + Alertmanager rules | DONE |
+| KS-006 | CI pipeline | DONE |
+| KS-007 | README finalization + audit | DONE |
 | KS-stretch-01 | PV health metrics | DEFERRED |
 | KS-stretch-02 | Watch-based streaming | DEFERRED |
 | KS-stretch-03 | Managed cloud support | DEFERRED |

@@ -246,13 +246,16 @@ kube-prometheus-stack but want more than manual kubectl.
 ## Deployment (user-facing)
 
 ```bash
-# Prerequisites: minikube running, kubectl configured, Terraform installed
+# Prerequisites: minikube running, kubectl configured, Terraform installed, Docker installed
 git clone git@github.com:igalhub/kube-sentinel.git
-cd kube-sentinel/terraform
+cd kube-sentinel
+eval $(minikube docker-env)          # point Docker at minikube's daemon
+docker build -t kube-sentinel:latest .
+cd terraform
 terraform init
 terraform apply   # deploys everything: Prometheus, Grafana, kube-sentinel
-# Access Grafana: minikube service grafana --url
-# Access Prometheus: minikube service prometheus-server --url
+# Access Grafana: minikube service grafana -n monitoring --url
+# Access Prometheus: minikube service prometheus-server -n monitoring --url
 ```
 
 Teardown:

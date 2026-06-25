@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-Project is in planning phase — no source code exists yet. KS-001 (repo scaffolding) is the first ticket to implement. See TICKETS.md for the full sequence and acceptance criteria.
+Project is complete. All tickets KS-001 through KS-007 implemented, QA-accepted, and committed. See TICKETS.md for the full sequence and acceptance criteria.
 
 ---
 
