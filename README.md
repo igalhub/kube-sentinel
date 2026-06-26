@@ -105,7 +105,7 @@ full complexity.
 ## Architecture
 
 ```
-Kubernetes cluster (minikube)
+Kubernetes cluster (minikube / k3s / any cluster)
   │
   ├── kube-sentinel (Deployment, 1 replica)
   │     └── Python service
@@ -249,6 +249,10 @@ minikube service prometheus-server -n monitoring --url
 # kube-sentinel /metrics directly
 minikube service kube-sentinel -n monitoring --url
 ```
+**On k3s or other clusters:** use `kubectl get svc -n monitoring` to
+find the NodePort values, then access via `http://<VM_IP>:<nodeport>`.
+See `docs/HOMELAB_DEPLOYMENT.md` for the full k3s walkthrough.
+
 
 ### Teardown
 

@@ -1,14 +1,15 @@
 output "grafana_url" {
-  description = "Command to get the Grafana URL on minikube (default credentials: admin / admin)"
-  value       = "minikube service grafana -n ${var.namespace} --url"
+  description = "Grafana access — minikube: run 'minikube service grafana -n monitoring --url'; k3s/other: run 'kubectl get svc grafana -n monitoring' and use the NodePort"
+  value       = "kubectl get svc grafana -n ${var.namespace}"
 }
 
 output "prometheus_url" {
-  description = "Command to get the Prometheus URL on minikube"
-  value       = "minikube service prometheus-server -n ${var.namespace} --url"
+  description = "Prometheus access — minikube: run 'minikube service prometheus-server -n monitoring --url'; k3s/other: run 'kubectl get svc prometheus-server -n monitoring' and use the NodePort"
+  value       = "kubectl get svc prometheus-server -n ${var.namespace}"
 }
 
 output "kube_sentinel_url" {
-  description = "Command to get the kube-sentinel /metrics URL on minikube"
-  value       = "minikube service kube-sentinel -n ${var.namespace} --url"
+  description = "kube-sentinel access — minikube: run 'minikube service kube-sentinel -n monitoring --url'; k3s/other: run 'kubectl get svc kube-sentinel -n monitoring' and use the NodePort"
+  value       = "kubectl get svc kube-sentinel -n ${var.namespace}"
 }
+
