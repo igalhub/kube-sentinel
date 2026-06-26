@@ -264,6 +264,34 @@ audit which belongs to the user alone.
 
 ---
 
+## KS-008 — Home lab deployment documentation
+
+**Goal:** Document deployment on a Proxmox home lab environment using
+k3s instead of minikube, including key differences and multi-project
+coexistence.
+
+**Deliverables:**
+- `docs/HOMELAB_DEPLOYMENT.md` — full deployment walkthrough for
+  Proxmox VE + Ubuntu Server VM + k3s environment
+- README platform support table updated with k3s row
+- README platform support note added for home lab
+- Documented: k3s uses containerd — image import via
+  `docker save | sudo k3s ctr images import` required
+- Documented: NodePort access replaces `minikube service` commands
+- Documented: Terraform outputs still reference minikube — use
+  `kubectl get svc -n monitoring` instead
+
+**Tested on:**
+- Proxmox VE 9.2.3, Beelink SER mini PC
+- Ubuntu Server 24.04.3 LTS VM
+- k3s v1.35.5, Terraform 1.15.7, Helm 3.21.2, Docker 29.6.0
+
+**Dependencies:** KS-007
+
+**Status: DONE**
+
+---
+
 ## KS-stretch-01 — PersistentVolume health metrics
 
 **Status:** DEFERRED
@@ -304,6 +332,7 @@ configuration. Deferred — out of scope for a minikube-first project.
 | KS-005 | Grafana dashboard + Alertmanager rules | DONE |
 | KS-006 | CI pipeline | DONE |
 | KS-007 | README finalization + audit | DONE |
+| KS-008 | Home lab deployment documentation | DONE |
 | KS-stretch-01 | PV health metrics | DEFERRED |
 | KS-stretch-02 | Watch-based streaming | DEFERRED |
 | KS-stretch-03 | Managed cloud support | DEFERRED |

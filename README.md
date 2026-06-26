@@ -288,9 +288,20 @@ cleaned up after each test.
 | Exporter (in-cluster) | ✅ Tested | ⚠️ Should work — in-cluster SA auth is standard | ⚠️ Should work |
 | Terraform provisioning | ✅ Tested | ❌ Not in scope — managed cluster provisioning differs | ❌ Not in scope |
 | Helm charts | ✅ Tested | ⚠️ Charts are standard; Terraform provisioning untested | ⚠️ Untested |
+| k3s (home lab) | ✅ Tested | ⚠️ Untested | ✅ Should work |
 
 Developed and tested on Ubuntu 24.04, minikube v1.38.1,
 Kubernetes v1.35.1, Terraform v1.x, Helm v3.21.2.
+
+**Home lab (Proxmox VE + k3s):** Fully tested — exporter, Terraform
+provisioning, and Helm charts all work on k3s v1.35.5 without
+modification. Key difference from minikube: k3s uses containerd as its
+runtime, so the image must be imported via
+`docker save kube-sentinel:latest | sudo k3s ctr images import -`
+instead of `eval $(minikube docker-env)`. Services are exposed as
+NodePort — use `kubectl get svc -n monitoring` to find ports instead of
+`minikube service`. See `docs/HOMELAB_DEPLOYMENT.md` for the full
+walkthrough.
 
 ---
 
