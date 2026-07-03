@@ -9,3 +9,6 @@ __pycache__/
 *.tfstate.backup
 *.tfvars
 .terraform.lock.hcl
+
+# Claude Code session handoff — machine-local, never committed
+HANDOFF.md
