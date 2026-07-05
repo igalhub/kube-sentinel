@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-Project is complete. All tickets KS-001 through KS-007 implemented, QA-accepted, and committed. See TICKETS.md for the full sequence and acceptance criteria.
+Project is complete. All tickets KS-001 through KS-007 implemented, QA-accepted, and committed. See docs/TICKETS.md for the full sequence and acceptance criteria.
 
 ---
 
@@ -124,7 +124,7 @@ blend roles in a single turn.
 ## Role: PM
 
 Responsibilities:
-- Own PRD.md and TICKETS.md
+- Own docs/PRD.md and docs/TICKETS.md
 - Break PRD into tickets with acceptance criteria and dependencies
 - Accept/reject based on QA's report; never write code
 - Definition of done: QA has run the test suite AND proven that each
