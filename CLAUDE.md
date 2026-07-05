@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-Project is complete. All tickets KS-001 through KS-007 implemented, QA-accepted, and committed. See docs/TICKETS.md for the full sequence and acceptance criteria.
+Project is complete. All tickets KS-001 through KS-008 implemented, QA-accepted, and committed. See docs/TICKETS.md for the full sequence and acceptance criteria.
 
 ---
 
@@ -111,7 +111,8 @@ config/values.yaml.example — all configurable parameters documented
 
 **Ticket implementation order:** KS-001 (scaffolding) → KS-002 (exporter core) →
 KS-003 (Dockerfile + Helm) → KS-004 (Terraform) → KS-005 (dashboard + alerts) →
-KS-006 (CI) → KS-007 (README audit). Each ticket depends on the previous.
+KS-006 (CI) → KS-007 (README audit) → KS-008 (home lab deployment
+documentation). Each ticket depends on the previous.
 
 ---
 
