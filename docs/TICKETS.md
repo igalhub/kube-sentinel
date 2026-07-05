@@ -28,6 +28,8 @@ Establish the repository baseline. No application logic. No credentials.
 - [ ] `LICENSE` — MIT, copyright Igal Vexler 2026
 - [ ] `README.md` — full content from PRD package (not a placeholder)
 - [ ] `PRD.md`, `TICKETS.md`, `CLAUDE.md` in repo root
+      (`PRD.md`/`TICKETS.md` later reorganized into `docs/`; `CLAUDE.md`
+      and `README.md` remain at repo root)
 - [ ] Directory skeleton: `exporter/`, `terraform/`, `terraform/modules/`,
       `helm/`, `helm/templates/`, `tests/`, `docs/`, `grafana/`,
       `alertmanager/`
