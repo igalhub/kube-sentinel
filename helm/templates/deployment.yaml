@@ -34,11 +34,18 @@ spec:
               value: "{{ .Values.namespacesToMonitor }}"
           livenessProbe:
             httpGet:
-              path: /metrics
+              path: {{ .Values.livenessProbe.path }}
               port: {{ .Values.port }}
-            initialDelaySeconds: 15
-            periodSeconds: 30
-            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.port }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:

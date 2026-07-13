@@ -6,6 +6,18 @@ image:
 
 port: 8080
 
+livenessProbe:
+  path: /metrics
+  initialDelaySeconds: 15
+  periodSeconds: 30
+  failureThreshold: 3
+
+readinessProbe:
+  path: /metrics
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 3
+
 # Comma-separated list of namespaces to monitor. Empty string = all namespaces.
 namespacesToMonitor: ""
 

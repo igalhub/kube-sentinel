@@ -14,6 +14,20 @@ image:
 # Port the exporter's /metrics endpoint listens on
 port: 8080
 
+# Liveness probe — restarts the pod if /metrics stops responding
+livenessProbe:
+  path: /metrics
+  initialDelaySeconds: 15
+  periodSeconds: 30
+  failureThreshold: 3
+
+# Readiness probe — keeps the pod out of Service routing until /metrics responds
+readinessProbe:
+  path: /metrics
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 3
+
 # How often the exporter polls the Kubernetes API (seconds)
 scrapeIntervalSeconds: 30
 
