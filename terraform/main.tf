@@ -66,6 +66,7 @@ resource "helm_release" "prometheus" {
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus"
+  version    = "29.13.0"
   namespace  = kubernetes_namespace.monitoring.metadata[0].name
 
   depends_on = [helm_release.kube_sentinel]
@@ -116,6 +117,7 @@ resource "helm_release" "grafana" {
   name       = "grafana"
   repository = "https://grafana.github.io/helm-charts"
   chart      = "grafana"
+  version    = "10.5.15"
   namespace  = kubernetes_namespace.monitoring.metadata[0].name
 
   depends_on = [
