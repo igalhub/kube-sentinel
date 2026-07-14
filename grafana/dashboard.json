@@ -164,6 +164,7 @@
     {
       "id": 5,
       "title": "CrashLoopBackOff Containers",
+      "description": "Point-in-time snapshot of the waiting/CrashLoopBackOff label. A container actively crash-looping can briefly read 0 between backoff cycles (K8s only sets this label once the container enters its wait period) -- check Pod Restart Count for the persistent signal, and note the PodCrashLooping alert rule also fires independently on restart rate.",
       "type": "stat",
       "gridPos": {"x": 0, "y": 12, "w": 12, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${datasource}"},
@@ -199,6 +200,7 @@
     {
       "id": 6,
       "title": "OOMKilled Containers",
+      "description": "Point-in-time snapshot of the terminated/OOMKilled label -- same caveat as CrashLoopBackOff Containers: a container that already restarted after an OOM kill may show 0 here if it's back in Running state at scrape time.",
       "type": "stat",
       "gridPos": {"x": 12, "y": 12, "w": 12, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${datasource}"},
