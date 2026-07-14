@@ -115,6 +115,7 @@ deploys it onto the cluster with correct RBAC.
       - runtime stage: python:3.12-slim, non-root user, copies only
         what's needed
 - [x] `helm/Chart.yaml` — name: kube-sentinel, version: 0.1.0
+      (bumped to 0.1.1 post-completion when the readinessProbe was added)
 - [x] `helm/values.yaml` — configurable: image tag, scrape interval,
       port, namespaces to monitor, resource limits
 - [x] `helm/templates/deployment.yaml` — mounts ServiceAccount token,
