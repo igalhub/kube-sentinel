@@ -23,3 +23,6 @@ jobs:
 
       - name: Run offline test suite
         run: pytest -m "not k8s" -v
+
+      - name: Check helm_release versions pinned
+        run: python scripts/check_helm_versions.py
