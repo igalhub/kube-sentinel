@@ -41,3 +41,23 @@ groups:
         annotations:
           summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas"
           description: "{{ $value }} replicas have been unavailable for more than 2 minutes."
+
+      - alert: NodeCPUSaturation
+        expr: >
+          (kube_sentinel_node_requested_cpu_cores / kube_sentinel_node_allocatable_cpu_cores) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node {{ $labels.node }} is CPU saturated"
+          description: "Node {{ $labels.node }} has had requested CPU above 90% of allocatable for more than 5 minutes."
+
+      - alert: NodeMemorySaturation
+        expr: >
+          (kube_sentinel_node_requested_memory_bytes / kube_sentinel_node_allocatable_memory_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node {{ $labels.node }} is memory saturated"
+          description: "Node {{ $labels.node }} has had requested memory above 90% of allocatable for more than 5 minutes."

@@ -324,6 +324,118 @@ configuration. Deferred — out of scope for a minikube-first project.
 
 ---
 
+## Backlog (proposed — not scheduled)
+
+Candidates surfaced during 2026-07-15 review. KS-012 accepted and shipped;
+KS-009/KS-010/KS-011 remain proposed. Each requires explicit sign-off
+before moving to an active ticket.
+
+### KS-009 — Windowed CrashLoopBackOff/OOMKilled panel queries
+
+**Status:** PROPOSED
+**Depends on:** KS-005
+
+Verified: `grafana/dashboard.json` panels "CrashLoopBackOff Containers"
+(line 174) and "OOMKilled Containers" (line 210) still use instant
+queries — `count(kube_sentinel_pod_container_state{state="waiting",
+reason="CrashLoopBackOff"} == 1) or vector(0)` and the terminated/OOMKilled
+equivalent — confirmed against the label names actually emitted by
+`PodCollector.collect()` in `exporter/collector.py`. The PR #8 doc pass
+added a description explaining the point-in-time gap rather than closing
+it; `alertmanager/rules.yaml`'s `PodCrashLooping` rule already uses a more
+robust `increase(...[5m])` pattern for the same underlying signal.
+
+**Proposed fix:** change both panel expressions to
+`max_over_time(kube_sentinel_pod_container_state{...}[5m])` (or similar)
+so a container that cycled through the state within the window still
+shows up.
+
+**Acceptance criterion:** both panels stay non-zero for the full 5m
+window after a fixture pod enters CrashLoopBackOff/OOMKilled once, even
+after the container transitions to a different state.
+
+---
+
+### KS-010 — CI/pre-commit check for unpinned helm_release versions
+
+**Status:** PROPOSED
+**Depends on:** none
+
+Verified: `terraform/main.tf` — `helm_release.prometheus` (line 69) and
+`helm_release.grafana` (line 120) pin explicit `version` attributes
+(fixed in ba6c9bb). `helm_release.kube_sentinel` (line 42) has no
+`version` attribute, but this is not an instance of the same bug — it
+points at a local chart path (`chart = "${path.module}/../helm"`), which
+has no separate registry version to pin; the chart's own version lives
+in `helm/Chart.yaml`. A naive "every helm_release needs a version"
+check would false-positive on this block.
+
+**Proposed fix:** a grep-based check (pre-commit or CI step) that fails
+if any `helm_release` block with a `repository` attribute lacks a
+sibling `version` attribute — scoped to repo-based charts only, not
+local-path charts.
+
+**Acceptance criterion:** the check fails on a deliberately-introduced
+unpinned repo-based `helm_release` block, and passes on the current
+`terraform/main.tf` unmodified.
+
+---
+
+### KS-011 — dev-check.sh: Terraform state drift check
+
+**Status:** PROPOSED
+**Depends on:** none
+
+Verified: `.claude/dev-check.sh` currently only checks minikube status
+and HTTP reachability of the exporter/Prometheus/Grafana services — no
+Terraform plan/state check exists.
+
+**Proposed fix:** add a check that runs `terraform plan -detailed-exitcode`
+(or equivalent) from `terraform/` and reports DOWN if it would
+create/destroy/modify anything, rather than only checking service
+reachability.
+
+**Acceptance criterion:** with a deliberately `terraform state rm`'d
+resource, `dev-check.sh` reports the Terraform check as DOWN with the
+drift detail; on a clean apply it reports UP.
+
+---
+
+### KS-012 — Node CPU/Memory Saturation alert rules
+
+**Status:** DONE
+**Depends on:** KS-005
+
+Verified: `grafana/dashboard.json` "Node CPU Saturation" (line 424) and
+"Node Memory Saturation" (line 465) panels both use yellow@70 / red@90
+visual thresholds against requested-vs-allocatable ratios. No
+corresponding rule exists in `alertmanager/rules.yaml` — the four
+existing rules (`PodCrashLooping`, `NodeNotReady`, `NodeMemoryPressure`,
+`DeploymentUnavailable`) don't cover CPU/memory saturation ratios. This
+is the only pair of dashboard panels with visual alert thresholds that
+isn't backed by a paging rule.
+
+**Proposed fix:** add `NodeCPUSaturation` / `NodeMemorySaturation` alert
+rules to `alertmanager/rules.yaml`, mirroring the dashboard's 90% (red)
+threshold using `kube_sentinel_node_requested_*` /
+`kube_sentinel_node_allocatable_*`.
+
+**Acceptance criterion:** a node fixture pushed above 90% requested/
+allocatable ratio fires the alert, verified via Alertmanager's
+`/api/v1/rules` or `/api/v1/alerts` endpoint.
+
+**Shipped:** commit `8b5822f` (PR #11). Implemented with
+`severity: warning` and `for: 5m` on both rules — warning (not
+critical) to stay consistent with the existing non-boolean rules in
+`alertmanager/rules.yaml` (only `NodeNotReady` is critical); 5m is a
+sustained-signal window rather than an instant fire, since saturation
+is a trend rather than a boolean condition flip. Verified live against
+Prometheus `/api/v1/rules` (both rules `health: ok`, no `lastError`)
+and confirmed correctly inactive against the live node at ~7% CPU /
+~0.7% memory saturation.
+
+---
+
 ## Ticket status
 
 | Ticket | Title | Status |
@@ -339,3 +451,7 @@ configuration. Deferred — out of scope for a minikube-first project.
 | KS-stretch-01 | PV health metrics | DEFERRED |
 | KS-stretch-02 | Watch-based streaming | DEFERRED |
 | KS-stretch-03 | Managed cloud support | DEFERRED |
+| KS-009 | Windowed CrashLoopBackOff/OOMKilled panel queries | PROPOSED |
+| KS-010 | CI check for unpinned helm_release versions | PROPOSED |
+| KS-011 | dev-check.sh Terraform state drift check | PROPOSED |
+| KS-012 | Node CPU/Memory Saturation alert rules | DONE |
