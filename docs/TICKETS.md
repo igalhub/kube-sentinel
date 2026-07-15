@@ -326,8 +326,8 @@ configuration. Deferred — out of scope for a minikube-first project.
 
 ## Backlog (proposed — not scheduled)
 
-Candidates surfaced during 2026-07-15 review. KS-012 and KS-009 accepted
-and shipped; KS-010/KS-011 remain proposed. Each requires explicit
+Candidates surfaced during 2026-07-15 review. KS-012, KS-009, and KS-010
+accepted and shipped; KS-011 remains proposed. Each requires explicit
 sign-off before moving to an active ticket.
 
 ### KS-009 — Windowed CrashLoopBackOff/OOMKilled panel queries
@@ -366,7 +366,7 @@ returned to `CrashLoopBackOff`.
 
 ### KS-010 — CI/pre-commit check for unpinned helm_release versions
 
-**Status:** PROPOSED
+**Status:** DONE
 **Depends on:** none
 
 Verified: `terraform/main.tf` — `helm_release.prometheus` (line 69) and
@@ -386,6 +386,19 @@ local-path charts.
 **Acceptance criterion:** the check fails on a deliberately-introduced
 unpinned repo-based `helm_release` block, and passes on the current
 `terraform/main.tf` unmodified.
+
+**Shipped:** commit `6492a31` (PR #13). Implemented with a real HCL2
+parser (`python-hcl2`) rather than grep — the Explore/Plan pass found
+that `terraform/main.tf`'s blocks contain nested `values=[...]` lists
+with their own braces, nested `set{}` blocks, and inline comments, none
+of which a regex/brace-counter could handle reliably. `kube_sentinel` is
+exempt by construction (no `repository` attribute), not by a hardcoded
+exclusion. New script `scripts/check_helm_versions.py`, wired into
+`.github/workflows/ci.yml`, with `tests/test_check_helm_versions.py`
+covering all four cases. Mutation-tested live: removed `version` from
+`helm_release.prometheus`, confirmed the check failed naming the exact
+block, reverted, confirmed a clean pass; also mutation-tested the new
+unit tests themselves by breaking the resource-type filter.
 
 ---
 
@@ -460,6 +473,6 @@ and confirmed correctly inactive against the live node at ~7% CPU /
 | KS-stretch-02 | Watch-based streaming | DEFERRED |
 | KS-stretch-03 | Managed cloud support | DEFERRED |
 | KS-009 | Windowed CrashLoopBackOff/OOMKilled panel queries | DONE |
-| KS-010 | CI check for unpinned helm_release versions | PROPOSED |
+| KS-010 | CI check for unpinned helm_release versions | DONE |
 | KS-011 | dev-check.sh Terraform state drift check | PROPOSED |
 | KS-012 | Node CPU/Memory Saturation alert rules | DONE |
