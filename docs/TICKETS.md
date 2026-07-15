@@ -326,9 +326,8 @@ configuration. Deferred — out of scope for a minikube-first project.
 
 ## Backlog (proposed — not scheduled)
 
-Candidates surfaced during 2026-07-15 review. KS-012, KS-009, and KS-010
-accepted and shipped; KS-011 remains proposed. Each requires explicit
-sign-off before moving to an active ticket.
+Candidates surfaced during 2026-07-15 review. All four (KS-009, KS-010,
+KS-011, KS-012) accepted and shipped — this backlog is now cleared.
 
 ### KS-009 — Windowed CrashLoopBackOff/OOMKilled panel queries
 
@@ -404,7 +403,7 @@ unit tests themselves by breaking the resource-type filter.
 
 ### KS-011 — dev-check.sh: Terraform state drift check
 
-**Status:** PROPOSED
+**Status:** DONE
 **Depends on:** none
 
 Verified: `.claude/dev-check.sh` currently only checks minikube status
@@ -419,6 +418,23 @@ reachability.
 **Acceptance criterion:** with a deliberately `terraform state rm`'d
 resource, `dev-check.sh` reports the Terraform check as DOWN with the
 drift detail; on a clean apply it reports UP.
+
+**Shipped:** commit `d7197ab` (PR #14). Two design decisions resolved
+during Explore/Plan rather than assumed: (1) full refresh is used, not
+`-refresh=false` — both measured at ~5.3s since the Helm provider
+queries live release state during planning regardless of the refresh
+flag, so skipping refresh buys no speed but would miss real
+config-vs-actual-cluster drift; (2) the check distinguishes "not
+initialized" (any exit code other than 0/2) from "drift detected" (exit
+2) with different messages, verified in an isolated `/tmp` copy of
+`terraform/` without touching the real working state. This pushes
+`dev-check.sh`'s total runtime past the project's own documented <5s
+guideline for checks — a deliberate, commented exception. Mutation-
+tested live via `kubectl label` (real outside-Terraform drift, not
+`terraform state rm` as originally proposed) on the Grafana dashboard
+ConfigMap: confirmed DOWN naming the exact resource, reverted, confirmed
+clean UP again. This is the last item from the 2026-07-15 backlog
+review — KS-009, KS-010, KS-011, and KS-012 are all now shipped.
 
 ---
 
@@ -474,5 +490,5 @@ and confirmed correctly inactive against the live node at ~7% CPU /
 | KS-stretch-03 | Managed cloud support | DEFERRED |
 | KS-009 | Windowed CrashLoopBackOff/OOMKilled panel queries | DONE |
 | KS-010 | CI check for unpinned helm_release versions | DONE |
-| KS-011 | dev-check.sh Terraform state drift check | PROPOSED |
+| KS-011 | dev-check.sh Terraform state drift check | DONE |
 | KS-012 | Node CPU/Memory Saturation alert rules | DONE |
