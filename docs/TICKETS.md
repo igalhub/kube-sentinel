@@ -295,152 +295,128 @@ coexistence.
 
 ---
 
-## Backlog (proposed — not scheduled)
-
-Candidates surfaced during 2026-07-15 review. All four (KS-009, KS-010,
-KS-011, KS-012) accepted and shipped — this backlog is now cleared.
-
-### KS-009 — Windowed CrashLoopBackOff/OOMKilled panel queries
+## KS-009 — Windowed CrashLoopBackOff/OOMKilled panel queries
 
 **Status:** DONE
 **Depends on:** KS-005
 
-Verified: `grafana/dashboard.json` panels "CrashLoopBackOff Containers"
-(line 174) and "OOMKilled Containers" (line 210) still use instant
-queries — `count(kube_sentinel_pod_container_state{state="waiting",
-reason="CrashLoopBackOff"} == 1) or vector(0)` and the terminated/OOMKilled
-equivalent — confirmed against the label names actually emitted by
-`PodCollector.collect()` in `exporter/collector.py`. The PR #8 doc pass
-added a description explaining the point-in-time gap rather than closing
-it; `alertmanager/rules.yaml`'s `PodCrashLooping` rule already uses a more
-robust `increase(...[5m])` pattern for the same underlying signal.
+**Description:**
+The CrashLoopBackOff/OOMKilled dashboard panels used instant PromQL
+snapshots that could read 0 while a container was actively
+crash-looping — PR #8 documented this as a point-in-time caveat rather
+than closing it. Switch both panels to a 5-minute windowed query,
+matching the pattern the `PodCrashLooping` alert rule already uses.
 
-**Proposed fix:** change both panel expressions to
-`max_over_time(kube_sentinel_pod_container_state{...}[5m])` (or similar)
-so a container that cycled through the state within the window still
-shows up.
-
-**Acceptance criterion:** both panels stay non-zero for the full 5m
-window after a fixture pod enters CrashLoopBackOff/OOMKilled once, even
-after the container transitions to a different state.
-
-**Shipped:** commit `05c893d` (PR #12). Both panel descriptions rewritten
-to describe the new trailing-positive behavior (stays red up to 5m after
-recovery) instead of the old point-in-time false-negative caveat.
-Verified live against a `crashloop-test` fixture: caught the container in
-`terminated/Error` state where the old instant query read 0, confirmed
-the windowed query held at 1 through that gap and after the container
-returned to `CrashLoopBackOff`.
+**Acceptance criteria:**
+- [x] `grafana/dashboard.json` panels "CrashLoopBackOff Containers" and
+      "OOMKilled Containers" use
+      `max_over_time(kube_sentinel_pod_container_state{...}[5m])`
+      instead of an instant snapshot
+- [x] Panel descriptions rewritten to describe the new trailing-positive
+      behavior (stays red up to 5m after recovery) instead of the old
+      point-in-time false-negative caveat
+- [x] Verified live against a `crashloop-test` fixture: caught the
+      container in `terminated/Error` state where the old instant query
+      would have read 0; confirmed the windowed query held at 1 through
+      that gap and after the container returned to `CrashLoopBackOff`
+- [x] Shipped: commit `05c893d` (PR #12)
 
 ---
 
-### KS-010 — CI/pre-commit check for unpinned helm_release versions
+## KS-010 — CI check for unpinned helm_release versions
 
 **Status:** DONE
 **Depends on:** none
 
-Verified: `terraform/main.tf` — `helm_release.prometheus` (line 69) and
-`helm_release.grafana` (line 120) pin explicit `version` attributes
-(fixed in ba6c9bb). `helm_release.kube_sentinel` (line 42) has no
-`version` attribute, but this is not an instance of the same bug — it
-points at a local chart path (`chart = "${path.module}/../helm"`), which
-has no separate registry version to pin; the chart's own version lives
-in `helm/Chart.yaml`. A naive "every helm_release needs a version"
-check would false-positive on this block.
+**Description:**
+`terraform/main.tf`'s `helm_release` blocks could silently omit a
+pinned `version` — the exact bug already fixed once in `ba6c9bb` for
+prometheus/grafana. Add an automated check so the same class of bug
+can't recur silently on a future chart addition, without
+false-positiving on `helm_release.kube_sentinel` (a local chart path
+with no registry version to pin).
 
-**Proposed fix:** a grep-based check (pre-commit or CI step) that fails
-if any `helm_release` block with a `repository` attribute lacks a
-sibling `version` attribute — scoped to repo-based charts only, not
-local-path charts.
-
-**Acceptance criterion:** the check fails on a deliberately-introduced
-unpinned repo-based `helm_release` block, and passes on the current
-`terraform/main.tf` unmodified.
-
-**Shipped:** commit `6492a31` (PR #13). Implemented with a real HCL2
-parser (`python-hcl2`) rather than grep — the Explore/Plan pass found
-that `terraform/main.tf`'s blocks contain nested `values=[...]` lists
-with their own braces, nested `set{}` blocks, and inline comments, none
-of which a regex/brace-counter could handle reliably. `kube_sentinel` is
-exempt by construction (no `repository` attribute), not by a hardcoded
-exclusion. New script `scripts/check_helm_versions.py`, wired into
-`.github/workflows/ci.yml`, with `tests/test_check_helm_versions.py`
-covering all four cases. Mutation-tested live: removed `version` from
-`helm_release.prometheus`, confirmed the check failed naming the exact
-block, reverted, confirmed a clean pass; also mutation-tested the new
-unit tests themselves by breaking the resource-type filter.
+**Acceptance criteria:**
+- [x] `scripts/check_helm_versions.py` parses `terraform/**/*.tf` with a
+      real HCL2 parser (`python-hcl2`) — not grep/regex, since the
+      blocks contain nested `values=[...]` lists, nested `set{}`
+      blocks, and inline comments a hand-rolled parser couldn't handle
+      reliably
+- [x] Flags only `helm_release` blocks with a `repository` attribute and
+      no `version` attribute — `kube_sentinel` is exempt by
+      construction, not a hardcoded exclusion
+- [x] Wired into `.github/workflows/ci.yml` as a CI step
+- [x] `tests/test_check_helm_versions.py` covers all four cases
+      (registry+version, registry+no-version, local-chart exempt,
+      non-helm_release ignored)
+- [x] Mutation-tested live: removed `version` from
+      `helm_release.prometheus`, confirmed the check failed naming the
+      exact block, reverted, confirmed a clean pass; also
+      mutation-tested the unit tests themselves by breaking the
+      resource-type filter
+- [x] Shipped: commit `6492a31` (PR #13)
 
 ---
 
-### KS-011 — dev-check.sh: Terraform state drift check
+## KS-011 — dev-check.sh: Terraform state drift check
 
 **Status:** DONE
 **Depends on:** none
 
-Verified: `.claude/dev-check.sh` currently only checks minikube status
-and HTTP reachability of the exporter/Prometheus/Grafana services — no
-Terraform plan/state check exists.
+**Description:**
+`.claude/dev-check.sh` only checked service reachability, so a real
+Terraform state gap (like the prometheus/grafana version-pin drift
+fixed in `ba6c9bb`) could only be discovered by accident. Add a check
+that runs `terraform plan` and reports DOWN if it would
+create/destroy/modify anything.
 
-**Proposed fix:** add a check that runs `terraform plan -detailed-exitcode`
-(or equivalent) from `terraform/` and reports DOWN if it would
-create/destroy/modify anything, rather than only checking service
-reachability.
-
-**Acceptance criterion:** with a deliberately `terraform state rm`'d
-resource, `dev-check.sh` reports the Terraform check as DOWN with the
-drift detail; on a clean apply it reports UP.
-
-**Shipped:** commit `d7197ab` (PR #14). Two design decisions resolved
-during Explore/Plan rather than assumed: (1) full refresh is used, not
-`-refresh=false` — both measured at ~5.3s since the Helm provider
-queries live release state during planning regardless of the refresh
-flag, so skipping refresh buys no speed but would miss real
-config-vs-actual-cluster drift; (2) the check distinguishes "not
-initialized" (any exit code other than 0/2) from "drift detected" (exit
-2) with different messages, verified in an isolated `/tmp` copy of
-`terraform/` without touching the real working state. This pushes
-`dev-check.sh`'s total runtime past the project's own documented <5s
-guideline for checks — a deliberate, commented exception. Mutation-
-tested live via `kubectl label` (real outside-Terraform drift, not
-`terraform state rm` as originally proposed) on the Grafana dashboard
-ConfigMap: confirmed DOWN naming the exact resource, reverted, confirmed
-clean UP again. This is the last item from the 2026-07-15 backlog
-review — KS-009, KS-010, KS-011, and KS-012 are all now shipped.
+**Acceptance criteria:**
+- [x] New "Terraform state drift" check in `.claude/dev-check.sh` runs
+      `terraform plan -detailed-exitcode` with full refresh, not
+      `-refresh=false` — both measured at ~5.3s since the Helm provider
+      queries live release state during planning regardless of the
+      refresh flag, so skipping refresh buys no speed but would miss
+      real config-vs-actual-cluster drift
+- [x] Distinguishes three states by exit code: 0 (clean/UP), 2 (drift
+      detected, resource named in the DOWN detail message), and any
+      other code (not initialized / config error, DOWN with a distinct
+      message) — verified the uninitialized case in an isolated `/tmp`
+      copy without touching the real working state
+- [x] Documented as a deliberate exception to the project's own "<5s
+      total" dev-check guideline, since correctness (catching real
+      cluster drift) matters more here than speed
+- [x] Mutation-tested live: `kubectl label`-patched the Grafana
+      dashboard ConfigMap outside Terraform, confirmed the check
+      reported DOWN naming the exact resource, reverted, confirmed
+      clean UP again
+- [x] Shipped: commit `d7197ab` (PR #14)
 
 ---
 
-### KS-012 — Node CPU/Memory Saturation alert rules
+## KS-012 — Node CPU/Memory Saturation alert rules
 
 **Status:** DONE
 **Depends on:** KS-005
 
-Verified: `grafana/dashboard.json` "Node CPU Saturation" (line 424) and
-"Node Memory Saturation" (line 465) panels both use yellow@70 / red@90
-visual thresholds against requested-vs-allocatable ratios. No
-corresponding rule exists in `alertmanager/rules.yaml` — the four
-existing rules (`PodCrashLooping`, `NodeNotReady`, `NodeMemoryPressure`,
-`DeploymentUnavailable`) don't cover CPU/memory saturation ratios. This
-is the only pair of dashboard panels with visual alert thresholds that
-isn't backed by a paging rule.
+**Description:**
+The dashboard's Node CPU/Memory Saturation panels had visual thresholds
+(yellow@70/red@90) but no corresponding Alertmanager rule — the only
+pair of panels on the dashboard where a threshold breach didn't page
+anyone. Add matching alert rules.
 
-**Proposed fix:** add `NodeCPUSaturation` / `NodeMemorySaturation` alert
-rules to `alertmanager/rules.yaml`, mirroring the dashboard's 90% (red)
-threshold using `kube_sentinel_node_requested_*` /
-`kube_sentinel_node_allocatable_*`.
-
-**Acceptance criterion:** a node fixture pushed above 90% requested/
-allocatable ratio fires the alert, verified via Alertmanager's
-`/api/v1/rules` or `/api/v1/alerts` endpoint.
-
-**Shipped:** commit `8b5822f` (PR #11). Implemented with
-`severity: warning` and `for: 5m` on both rules — warning (not
-critical) to stay consistent with the existing non-boolean rules in
-`alertmanager/rules.yaml` (only `NodeNotReady` is critical); 5m is a
-sustained-signal window rather than an instant fire, since saturation
-is a trend rather than a boolean condition flip. Verified live against
-Prometheus `/api/v1/rules` (both rules `health: ok`, no `lastError`)
-and confirmed correctly inactive against the live node at ~7% CPU /
-~0.7% memory saturation.
+**Acceptance criteria:**
+- [x] `NodeCPUSaturation` / `NodeMemorySaturation` alert rules added to
+      `alertmanager/rules.yaml`, using `kube_sentinel_node_requested_*`
+      / `kube_sentinel_node_allocatable_*` at a 90% threshold (matching
+      the dashboard's red threshold)
+- [x] `severity: warning` on both rules (consistent with the existing
+      non-boolean rules; only `NodeNotReady` is critical) and
+      `for: 5m` (a sustained-signal window, since saturation is a trend
+      rather than a boolean condition flip)
+- [x] Verified live against Prometheus `/api/v1/rules`: both rules
+      `health: ok`, no `lastError`, and correctly inactive against the
+      live node at ~7% CPU / ~0.7% memory saturation
+- [x] Shipped: commit `8b5822f` (PR #11)
 
 ---
 
