@@ -295,35 +295,6 @@ coexistence.
 
 ---
 
-## KS-stretch-01 — PersistentVolume health metrics
-
-**Status:** DEFERRED
-
-PV bound/released/failed state monitoring. Deferred to v2 — not all
-clusters use PVs and it adds meaningful K8s API complexity.
-
----
-
-## KS-stretch-02 — Watch-based streaming (replace polling)
-
-**Status:** DEFERRED
-
-Replace list-based polling with watch-based streaming for real-time
-(sub-second) failure detection. Significantly more complex reconciliation
-loop. Deferred to v2.
-
----
-
-## KS-stretch-03 — Managed cloud cluster support (EKS/GKE/AKS)
-
-**Status:** DEFERRED
-
-Cloud-provider-specific Terraform modules for provisioning on managed
-clusters. Each provider requires different IAM, VPC, and node group
-configuration. Deferred — out of scope for a minikube-first project.
-
----
-
 ## Backlog (proposed — not scheduled)
 
 Candidates surfaced during 2026-07-15 review. All four (KS-009, KS-010,
@@ -473,6 +444,35 @@ and confirmed correctly inactive against the live node at ~7% CPU /
 
 ---
 
+## KS-stretch-01 — PersistentVolume health metrics
+
+**Status:** DEFERRED
+
+PV bound/released/failed state monitoring. Deferred to v2 — not all
+clusters use PVs and it adds meaningful K8s API complexity.
+
+---
+
+## KS-stretch-02 — Watch-based streaming (replace polling)
+
+**Status:** DEFERRED
+
+Replace list-based polling with watch-based streaming for real-time
+(sub-second) failure detection. Significantly more complex reconciliation
+loop. Deferred to v2.
+
+---
+
+## KS-stretch-03 — Managed cloud cluster support (EKS/GKE/AKS)
+
+**Status:** DEFERRED
+
+Cloud-provider-specific Terraform modules for provisioning on managed
+clusters. Each provider requires different IAM, VPC, and node group
+configuration. Deferred — out of scope for a minikube-first project.
+
+---
+
 ## Ticket status
 
 | Ticket | Title | Status |
@@ -485,10 +485,10 @@ and confirmed correctly inactive against the live node at ~7% CPU /
 | KS-006 | CI pipeline | DONE |
 | KS-007 | README finalization + audit | DONE |
 | KS-008 | Home lab deployment documentation | DONE |
-| KS-stretch-01 | PV health metrics | DEFERRED |
-| KS-stretch-02 | Watch-based streaming | DEFERRED |
-| KS-stretch-03 | Managed cloud support | DEFERRED |
 | KS-009 | Windowed CrashLoopBackOff/OOMKilled panel queries | DONE |
 | KS-010 | CI check for unpinned helm_release versions | DONE |
 | KS-011 | dev-check.sh Terraform state drift check | DONE |
 | KS-012 | Node CPU/Memory Saturation alert rules | DONE |
+| KS-stretch-01 | PV health metrics | DEFERRED |
+| KS-stretch-02 | Watch-based streaming | DEFERRED |
+| KS-stretch-03 | Managed cloud support | DEFERRED |
