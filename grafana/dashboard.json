@@ -164,14 +164,14 @@
     {
       "id": 5,
       "title": "CrashLoopBackOff Containers",
-      "description": "Point-in-time snapshot of the waiting/CrashLoopBackOff label. A container actively crash-looping can briefly read 0 between backoff cycles (K8s only sets this label once the container enters its wait period) -- check Pod Restart Count for the persistent signal, and note the PodCrashLooping alert rule also fires independently on restart rate.",
+      "description": "Reflects any CrashLoopBackOff event in the last 5 minutes (matching the PodCrashLooping alert rule's window) -- stays red for up to 5m after the container recovers, so treat this as a recent-activity indicator rather than a live status check. Prefer Pod Restart Count for the persistent signal.",
       "type": "stat",
       "gridPos": {"x": 0, "y": 12, "w": 12, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${datasource}"},
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "${datasource}"},
-          "expr": "count(kube_sentinel_pod_container_state{state=\"waiting\",reason=\"CrashLoopBackOff\"} == 1) or vector(0)",
+          "expr": "count(max_over_time(kube_sentinel_pod_container_state{state=\"waiting\",reason=\"CrashLoopBackOff\"}[5m]) == 1) or vector(0)",
           "instant": true,
           "refId": "A"
         }
@@ -200,14 +200,14 @@
     {
       "id": 6,
       "title": "OOMKilled Containers",
-      "description": "Point-in-time snapshot of the terminated/OOMKilled label -- same caveat as CrashLoopBackOff Containers: a container that already restarted after an OOM kill may show 0 here if it's back in Running state at scrape time.",
+      "description": "Reflects any OOMKilled event in the last 5 minutes -- same window and same trailing-positive caveat as CrashLoopBackOff Containers: stays red for up to 5m after the container is back in Running state.",
       "type": "stat",
       "gridPos": {"x": 12, "y": 12, "w": 12, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${datasource}"},
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "${datasource}"},
-          "expr": "count(kube_sentinel_pod_container_state{state=\"terminated\",reason=\"OOMKilled\"} == 1) or vector(0)",
+          "expr": "count(max_over_time(kube_sentinel_pod_container_state{state=\"terminated\",reason=\"OOMKilled\"}[5m]) == 1) or vector(0)",
           "instant": true,
           "refId": "A"
         }

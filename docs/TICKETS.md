@@ -326,13 +326,13 @@ configuration. Deferred — out of scope for a minikube-first project.
 
 ## Backlog (proposed — not scheduled)
 
-Candidates surfaced during 2026-07-15 review. KS-012 accepted and shipped;
-KS-009/KS-010/KS-011 remain proposed. Each requires explicit sign-off
-before moving to an active ticket.
+Candidates surfaced during 2026-07-15 review. KS-012 and KS-009 accepted
+and shipped; KS-010/KS-011 remain proposed. Each requires explicit
+sign-off before moving to an active ticket.
 
 ### KS-009 — Windowed CrashLoopBackOff/OOMKilled panel queries
 
-**Status:** PROPOSED
+**Status:** DONE
 **Depends on:** KS-005
 
 Verified: `grafana/dashboard.json` panels "CrashLoopBackOff Containers"
@@ -353,6 +353,14 @@ shows up.
 **Acceptance criterion:** both panels stay non-zero for the full 5m
 window after a fixture pod enters CrashLoopBackOff/OOMKilled once, even
 after the container transitions to a different state.
+
+**Shipped:** commit `05c893d` (PR #12). Both panel descriptions rewritten
+to describe the new trailing-positive behavior (stays red up to 5m after
+recovery) instead of the old point-in-time false-negative caveat.
+Verified live against a `crashloop-test` fixture: caught the container in
+`terminated/Error` state where the old instant query read 0, confirmed
+the windowed query held at 1 through that gap and after the container
+returned to `CrashLoopBackOff`.
 
 ---
 
@@ -451,7 +459,7 @@ and confirmed correctly inactive against the live node at ~7% CPU /
 | KS-stretch-01 | PV health metrics | DEFERRED |
 | KS-stretch-02 | Watch-based streaming | DEFERRED |
 | KS-stretch-03 | Managed cloud support | DEFERRED |
-| KS-009 | Windowed CrashLoopBackOff/OOMKilled panel queries | PROPOSED |
+| KS-009 | Windowed CrashLoopBackOff/OOMKilled panel queries | DONE |
 | KS-010 | CI check for unpinned helm_release versions | PROPOSED |
 | KS-011 | dev-check.sh Terraform state drift check | PROPOSED |
 | KS-012 | Node CPU/Memory Saturation alert rules | DONE |
